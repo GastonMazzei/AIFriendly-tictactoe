@@ -19,12 +19,12 @@ from keras import backend
 import os
 
 from SmartGame.generating.classdef import TickTackToe
-from SmartGame.interactive.francisca import *
+from SmartGame.interactive.brains import *
 
 def play(L=3,pL=3):
   #START THE GAME!
   #allowedMoves = 2500
-  name = 'Francisca'
+  name = 'AI-Friendly'
   T = TickTackToe(L,pL)
   from keras.models import load_model
   TYPE = 'o'
