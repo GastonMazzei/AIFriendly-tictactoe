@@ -122,37 +122,7 @@ def hacer_y_copiar_desacoplado(A,L,pL):
             B.board.itemset((x,y),A.board.item(x,y))
     return B
 
-def respond(TickTackToe,model,scaler,name,allowedMoves,L,pL):
-    if TickTackToe.checkO(): return TickTackToe,f"--HAS GANADO!--", False # chequear afuera desp de que mueve...
-    #time.sleep(3)
-    #print('input tablero is', TickTackToe.board)
-    #time.sleep(3)
-    a = TickTackToe.board.ravel().tolist()[0]
-    j = 0
-    for i in range(allowedMoves):
-        j = i
-        copia = hacer_y_copiar_desacoplado(TickTackToe,L,pL)
-        #print('tablero original de esto copiado es', copia.board)
-        copia.movesX()
-        #print('and then it moves and it is',copia.board)
-        #time.sleep(1)
-        b = copia.board.ravel().tolist()[0]
-        c = a + b
-        c = [int(x) for x in c]
-        INPUT = np.asarray(c).reshape(1,-1)
-        #print('SENDING TO processer input was',INPUT)
-        result = processInData(model, scaler, INPUT)
-        result = result[0][0]
-        if result==1: break
-        else: pass
-        #else: print('result of input was',INPUT,result)
-    if copia.checkX(): return copia,f"------{name} TE HA GANADO!-------", False
-#    elif j==allowedMoves-1:
-#        raise Exception(f'{name} surrenders... couldnt find a move :(')
-    elif j==allowedMoves-1: return copia,f"-------{name} no quiere pensar mas... usando output aleatorio...----",True
-    else:
-        return copia, f'{name} ha jugado...MIRA:', True
-#-----------------new respond
+
 
 def processInData(model, s, inData):
     inData_scale = s.transform(inData)
@@ -161,7 +131,7 @@ def processInData(model, s, inData):
     return result
 
 #--------------------------------------------------------------------------
-def new_respond(TickTackToe,model,scaler,name):
+def new_respond(TickTackToe,model,scaler,name,**kwargs):
     a = TickTackToe.board.ravel().tolist()[0]
     L = TickTackToe.length
     pL = TickTackToe.patternLength
@@ -172,7 +142,10 @@ def new_respond(TickTackToe,model,scaler,name):
         for K2 in range(L):
             if TickTackToe.board.item(K1,K2)==-1:
                 copia = hacer_y_copiar_desacoplado(TickTackToe,L,pL)
-                copia.board.itemset((K1,K2),0)
+                if kwargs.get('prespective','o')=='o':
+                  copia.board.itemset((K1,K2),0)
+                else:
+                  copia.board.itemset((K1,K2),1)
                 b = copia.board.ravel().tolist()[0]
                 c = a + b
                 c = [int(x) for x in c]

@@ -16,7 +16,7 @@ import numpy as np
 
 from SmartGame.generating.classdef import TickTackToe
 
-def saver(dic):
+def saver(dic,flag):
     a = os.listdir()
     a = [x for x in a if x[-4:]=='.pkl']
     pattern = re.compile(f'results([0-9]+).pkl')
@@ -28,7 +28,8 @@ def saver(dic):
                 if not indice: indice=0
                 if q>= indice: indice = q + 1
             except: pass    
-    with open(f'./../data/results{indice}.pkl','wb') as w:
+    print('saving with flag: ',flag)
+    with open(f'./../data/results{flag}.pkl','wb') as w:
         pickle.dump(dic, w)    
     return
 

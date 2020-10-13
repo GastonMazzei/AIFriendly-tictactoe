@@ -90,7 +90,8 @@ def create_and_predict(data,**kwargs):
             validation_data=data['val'],)
     try: os.mkdir('./../data/models')
     except: pass 
-    model.save(f'./../data/models/model-{kwargs.get("model","o")}')
+    saving_name = kwargs.get('saving_name','') 
+    model.save(f'./../data/models/model-{kwargs.get("model","o")}{saving_name}')
 
     #
     # 3) Return results
@@ -146,5 +147,7 @@ if __name__=='__main__':
     #  50 epochs over the data. At the end, results are plotted!
     #
     perspective = 'x'
-    create_and_predict(preprocess(load(f'./../data/processed-{perspective}.csv'),),
+    filename = f'./../data/processed-{perspective}.csv'
+    print(f'Using the file {filename}; defaults to not-an-enhaced-network')
+    create_and_predict(preprocess(load(filename),),
             neurons=int(sys.argv[1]), epochs=int(sys.argv[2]),plot=True, model=perspective)

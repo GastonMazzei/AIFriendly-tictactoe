@@ -24,11 +24,12 @@ from SmartGame.generating.core import core
 from SmartGame.processing.process import init, processer
 from SmartGame.processing.network import load, preprocess, create_and_predict
 from SmartGame.interactive.play import play
+from SmartGame.interactive.play_x import play_x
 
-def generator(ngames: list, grid: tuple, verbose: bool=False):
+def generator(ngames: list, grid: tuple, verbose: bool=False, enhace=False):
     try:
         L, pL = grid
-        core(ngames,L,pL,verbose)
+        core(ngames,L,pL,verbose, enhace)
     except Exception as ins:
         mssg = f'\n STATUS: an error ocurred'
         print(mssg, ins.args)
@@ -40,35 +41,68 @@ if __name__=='__main__':
     try:
         played=False
         if sys.argv[1]=='play': 
-            try:
-                play(*[int(j_) for j_ in sys.argv[2:]])
-            except IndexError:
-                play(3,3)
             played=True
+            version = sys.argv[2]
+            try:
+                raise Exception('not built yet')
+                play(*[int(j_) for j_ in sys.argv[3:]])
+            except:
+                if version=='first':
+                  play(3,3)
+                else: 
+                  play_x(3,3) 
+                  print('problem')           
     except: 
         pass 
 
     if played:
         sys.exit(0)
     else:
+        try:
+          if sys.argv[1]=='enhace': enhace=True
+        except: enhace=False
+
         # Generate games!
         grid = (3,3)
         verbose = False
-        N = 20000
-        generator(N , grid, verbose)
+        N = 1500
+        perspective = ['o','x']
+        generator(N , grid, verbose, enhace)
 
         # Process game-results!
-        for _ in ['o']:#,'x']:
-            df = processer(init(), _)
-            df.to_csv(f'./../data/processed-{_}.csv',index=False)
+        if enhace:
+          for _ in perspective:
+              df = processer(init(True), _)
+              df.to_csv(f'./../data/processed-{_}_enhace.csv',index=False)
  
-        # Fit a network!
-        #
-        # EXTRA: do we want to see each training-result?
-        plot = True #<-- True or False 
-        for _ in ['o']:#,'x']:    
-            create_and_predict(preprocess(load(f'./../data/processed-{_}.csv'),),
-                neurons=16, epochs=120, plot=plot, model=_)
-
-        # Play!
-        play(*grid)
+          # Fit a network!
+          #
+          # EXTRA: do we want to see each training-result?
+          plot = True #<-- True or False 
+          for _ in perspective:    
+              create_and_predict(preprocess(load(f'./../data/processed-{_}_enhace.csv'),),
+                  neurons=16, epochs=120, plot=plot, model=_, saving_name='_enhace')
+          # Play!
+          AGAINST = 'O'
+          if AGAINST=='O':
+            play(*grid, True)
+          else:
+            play_x(*grid, True)
+        else:
+          for _ in perspective:
+              df = processer(init(), _)
+              df.to_csv(f'./../data/processed-{_}.csv',index=False)
+ 
+          # Fit a network!
+          #
+          # EXTRA: do we want to see each training-result?
+          plot = True #<-- True or False 
+          for _ in perspective:    
+              create_and_predict(preprocess(load(f'./../data/processed-{_}.csv'),),
+                  neurons=16, epochs=120, plot=plot, model=_)
+          # Play!
+          AGAINST = 'O'
+          if AGAINST=='O':
+            play(*grid)
+          else:
+            play_x(*grid)

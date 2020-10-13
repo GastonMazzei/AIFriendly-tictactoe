@@ -17,11 +17,16 @@ import time
 import pandas as pd
 import numpy as np
 
+from sklearn.preprocessing import StandardScaler
+from keras.models import load_model
+
 from SmartGame.generating.classdef import TickTackToe
 from SmartGame.generating.utils.core_utils import saver
 from SmartGame.generating.smart import smart_O, smart_X
+from SmartGame.generating.enhaced import AIFriendly_O, AIFriendly_X
 
-def core(Ngames : int, L : int, pL : int, verbose: bool=False, **kwargs): 
+
+def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, **kwargs): 
     """
     kwargs:
 
@@ -55,8 +60,30 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, **kwargs):
       processing_dispatcher = {3:aux1, 2:aux2, 1:aux2}
     #***************************************************************
 
+    if enhace:
+      scaler_X = StandardScaler().fit(pd.read_csv(f'../data/processed-x.csv').to_numpy()[:,:-1])
+      scaler_O = StandardScaler().fit(pd.read_csv(f'../data/processed-o.csv').to_numpy()[:,:-1])
+      model_O = load_model(f'./../data/models/model-o')
+      model_X = load_model(f'./../data/models/model-x')
+      X_mover = (lambda x,y: AIFriendly_X(x, model_X, scaler_X,y) )
+      O_mover = (lambda x,y: AIFriendly_O(x, model_O, scaler_O,y) )
+    else: 
+      X_mover = (lambda x,y: smart_X(x, random_X))  
+      O_mover = (lambda x,y: smart_O(x, random_O))  
+
+    past = [{}]
     for x in range(Ngames): 
         try:
+            # (0) Report
+            #
+            if x%200==0: 
+              print(f'Lap N{x}')
+              if enhace: 
+                print(f'past dictionary has {len(past[0].keys())} keys')
+                threshold = 2
+                if len(past[0].keys())<threshold: 
+                  #for k,v in past[0].values(): print(k,v,sep=' ',end='\t')
+                  print(past)
             #
             # (1) Initialize
             #
@@ -70,7 +97,8 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, **kwargs):
                 temp = []
                 try:
                     # (2.0)   "X moves"
-                    t = smart_X(t, random_X)
+                    #t = smart_X(t, random_X)
+                    t,*past = X_mover(t,past[0])
                     temp.append(tuple(t.board.ravel().tolist()[0])) 
 
                     # (2.1)   "if X won, break"
@@ -80,7 +108,8 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, **kwargs):
                         break    
 
                     # (2.2)   "O moves"
-                    t = smart_O(t, random_O) 
+                    #t = smart_O(t, random_O) 
+                    t,*past = O_mover(t,past[0])
                     temp.append(tuple(t.board.ravel().tolist()[0]))
                     log += temp
 
@@ -141,6 +170,7 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, **kwargs):
     #**********************************FLAGGED FOR KILL   
 
     # (5) Save
-    saver(results)
+    if enhace: saver(results,'_enhace')
+    else: saver(results,'')    
     return
 

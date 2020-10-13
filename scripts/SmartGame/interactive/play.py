@@ -21,16 +21,18 @@ import os
 from SmartGame.generating.classdef import TickTackToe
 from SmartGame.interactive.brains import *
 
-def play(L=3,pL=3):
-  #START THE GAME!
-  #allowedMoves = 2500
+def play(L=3,pL=3, enhace=False):
   name = 'AI-Friendly'
   T = TickTackToe(L,pL)
   from keras.models import load_model
-  TYPE = 'o'
-  model = load_model(f'./../data/models/model-{TYPE}')
   from sklearn.preprocessing import StandardScaler
-  scaler = StandardScaler().fit(pd.read_csv(f'../data/processed-{TYPE}.csv').to_numpy()[:,:-1])
+  TYPE = 'o'
+  if enhace: 
+    model = load_model(f'./../data/models/model-{TYPE}_enhace')
+    scaler = StandardScaler().fit(pd.read_csv(f'../data/processed-{TYPE}_enhace.csv').to_numpy()[:,:-1])
+  else: 
+    model = load_model(f'./../data/models/model-{TYPE}')
+    scaler = StandardScaler().fit(pd.read_csv(f'../data/processed-{TYPE}.csv').to_numpy()[:,:-1])
 
   def INTRO():
       print(f'\n\n\n\nHola! Si estas aca es porque queres jugar contra {name}... Suerte!\n\n') 
