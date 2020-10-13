@@ -45,20 +45,6 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
 
     results = {}
     
-    #**********************************FLAGGED FOR KILL
-    # make a dict for each game-stage (step 0,1,2,3,4)
-    if False:
-      Stage_0 = {}
-      Stage_1 = {}
-      Stage_2 = {}
-      Stage_3 = {}
-      Stage_4 = {}
-      Stage_full = {}      # currently not splitting by hands before saving..
-      #              Cesar Miquel's approach!
-      #stages = {0:Stage_0 ,1:Stage_1, 2:Stage_2, 3:Stage_3, 4:Stage_4 , 5:Stage_full}
-      stages = {5:Stage_full}
-      processing_dispatcher = {3:aux1, 2:aux2, 1:aux2}
-    #***************************************************************
 
     if enhace:
       if perspective=='x':
@@ -66,22 +52,28 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
         model_X = load_model(f'./../data/models/model-x')
         X_mover = (lambda x,y: AIFriendly_X(x, model_X, scaler_X,y) )
         O_mover = (lambda x,y: (smart_O(x, random_O),[y]))  
-      else:
+      elif perspective=='o':
         scaler_O = StandardScaler().fit(pd.read_csv(f'../data/processed-o.csv').to_numpy()[:,:-1])
         model_O = load_model(f'./../data/models/model-o')
         O_mover = (lambda x,y: AIFriendly_O(x, model_O, scaler_O,y) )
         X_mover = (lambda x,y: (smart_X(x, random_X),[y]))  
+      else:
+        scaler_X = StandardScaler().fit(pd.read_csv(f'../data/processed-x.csv').to_numpy()[:,:-1])
+        scaler_O = StandardScaler().fit(pd.read_csv(f'../data/processed-o.csv').to_numpy()[:,:-1])
+        model_X = load_model(f'./../data/models/model-x')
+        X_mover = (lambda x,y: AIFriendly_X(x, model_X, scaler_X,y) )
+        model_O = load_model(f'./../data/models/model-o')
+        O_mover = (lambda x,y: AIFriendly_O(x, model_O, scaler_O,y) )
     else: 
       X_mover = (lambda x,y: (smart_X(x, random_X),[y]))  
       O_mover = (lambda x,y: (smart_O(x, random_O),[y]))  
 
     past = [{}]
     for x in range(Ngames): 
-        print('lap ',x)
         try:
             # (0) Report
             #
-            if x%20==0: 
+            if x%200==0: 
               print(f'Lap N{x}')
               if enhace: 
                 print(f'past dictionary has {len(past[0].keys())} keys')
@@ -102,10 +94,14 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
                 temp = []
                 try:
                     # (2.0)   "X moves"
-                    #t = smart_X(t, random_X)
-                    t,past = X_mover(t,past[0])
-                    #c = X_mover(t,past[0])
-                    temp.append(tuple(t.board.ravel().tolist()[0])) 
+
+                    if enhace and np.random.rand()<=random_X:
+                      t.movesX()
+                    else:
+                      t,past = X_mover(t,past[0])
+
+                    temp.append(tuple(t.board.ravel().tolist()[0]))
+             
                     # (2.1)   "if X won, break"
                     if t.checkX(): 
                         i = 1
@@ -113,8 +109,11 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
                         break    
 
                     # (2.2)   "O moves"
-                    #t = smart_O(t, random_O) 
-                    t,past = O_mover(t,past[0])
+                    if enhace and np.random.rand()<=random_O:
+                      t.movesO()
+                    else:
+                      t,past = O_mover(t,past[0])
+
                     temp.append(tuple(t.board.ravel().tolist()[0]))
                     log += temp
 
@@ -136,8 +135,6 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
             #            "lists" are not-
             #
             log = tuple(log)
-            print('HERE')
-            print(past,log,sep='\n')
 
             # (4) Append results
             # INDEX: 
@@ -150,33 +147,11 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
             else:
               results[log] = [0,0,0]
               results[log][i-1] += 1
-            print('HERE')
 
-    #**********************************FLAGGED FOR KILL  
-            if False:        
-              # Iterate over game-stages
-              #             
-              for y in stages.keys():
-                  temp_pand =  tuple(processing_dispatcher[i](log, y))                       
-                  if temp_pand in stages[y].keys(): 
-                      stages[y][temp_pand][i-1] += 1
-                  else:
-                      stages[y][temp_pand] = [0,0,0]
-                      stages[y][temp_pand][i-1] += 1
-    #**********************************FLAGGED FOR KILL
 
         except Exception as ins:
             print(f'Game {x}/{Ngames} failed with code: ', ins.args)
 
-    #**********************************FLAGGED FOR KILL   
-    if False:
-      # (5) Save
-      tagger = {0: 'all-but-last', 1:'first-hand',
-                2:'second-hand', 3:'third-hand',
-                4:'fourth-hand', 5:'full' }
-      for x in stages.keys():
-          saver(stages[x],tagger[x])
-    #**********************************FLAGGED FOR KILL   
 
     # (5) Save
     if enhace: saver(results,f'_enhace_{perspective}')

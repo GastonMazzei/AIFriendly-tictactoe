@@ -68,16 +68,23 @@ if __name__=='__main__':
         # Generate games!
         grid = (3,3)
         verbose = False
-        N = 5
+        N = 100
         perspective = ['o','x']
 
         # Process game-results!
         if enhace:
-          for _ in perspective:
-            generator(N , grid, verbose, enhace, _)
-            df = processer(init(_), _)
-            df.to_csv(f'./../data/processed-{_}_enhace.csv',index=False)
- 
+          if False: 
+            #network vs random...
+            for _ in perspective:
+              generator(N , grid, verbose, enhace, _)
+              df = processer(init(_), _)
+              df.to_csv(f'./../data/processed-{_}_enhace.csv',index=False)
+          else:  
+            #networks vs each other
+            generator(N , grid, verbose, enhace, 'both')
+            for _ in perspective:
+              df = processer(init('both'), _)
+              df.to_csv(f'./../data/processed-{_}_enhace.csv',index=False)
           # Fit a network!
           #
           # EXTRA: do we want to see each training-result?
