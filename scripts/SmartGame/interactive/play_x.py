@@ -30,6 +30,7 @@ def play_x(L=3,pL=3, enhace=False):
   if enhace: 
     model = load_model(f'./../data/models/model-{TYPE}_enhace')
     scaler = StandardScaler().fit(pd.read_csv(f'../data/processed-{TYPE}_enhace.csv').to_numpy()[:,:-1])
+    print('LOADED THE ENHACED VERSION!')
   else: 
     model = load_model(f'./../data/models/model-{TYPE}')
     scaler = StandardScaler().fit(pd.read_csv(f'../data/processed-{TYPE}.csv').to_numpy()[:,:-1])

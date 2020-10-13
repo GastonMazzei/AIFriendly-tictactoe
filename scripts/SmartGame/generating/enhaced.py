@@ -54,6 +54,7 @@ def AIFriendly_X(TickTackToe,model,scaler, past):
     a = TickTackToe.board.ravel().tolist()[0]
     L = TickTackToe.length
     if tuple(a) in past.keys() and tuple(a)!=tuple([-1]*(L**2)):
+      print('it already existed')
       return past[tuple(a)], [past]
     pL = TickTackToe.patternLength
     cases = []

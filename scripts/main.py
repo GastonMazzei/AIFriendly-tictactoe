@@ -40,21 +40,23 @@ def generator(ngames: list, grid: tuple, verbose: bool=False, enhace=False, pers
 
 
 if __name__=='__main__':
-  
     try:
         played=False
         if sys.argv[1]=='play': 
             played=True
             version = sys.argv[2]
+            try: enhace=sys.argv[3]
+            except: enhace=''
             try:
                 raise Exception('not built yet')
                 play(*[int(j_) for j_ in sys.argv[3:]])
             except:
                 if version=='first':
-                  play(3,3)
+                  if enhace: play(3,3,'enhace')
+                  else: play(3,3)
                 else: 
-                  play_x(3,3) 
-                  print('problem')           
+                  if enhace: play_x(3,3,'enhace')
+                  else: play_x(3,3)
     except: 
         pass 
 
@@ -68,7 +70,7 @@ if __name__=='__main__':
         # Generate games!
         grid = (3,3)
         verbose = False
-        N = 100
+        N = 8000
         perspective = ['o','x']
 
         # Process game-results!
@@ -94,7 +96,7 @@ if __name__=='__main__':
           plot = True #<-- True or False 
           for _ in perspective:    
             create_and_predict(preprocess(load(f'./../data/processed-{_}_enhace.csv'),),
-                                          neurons=16, epochs=120, plot=plot,
+                                          neurons=32, epochs=120, plot=plot,
                                           model=_, saving_name='_enhace')
           # Play!
           AGAINST = 'O'

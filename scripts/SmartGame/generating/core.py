@@ -73,7 +73,7 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
         try:
             # (0) Report
             #
-            if x%200==0: 
+            if x%1000==0: 
               print(f'Lap N{x}')
               if enhace: 
                 print(f'past dictionary has {len(past[0].keys())} keys')
@@ -154,6 +154,7 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
 
 
     # (5) Save
+    with open('past.pkl','wb') as w: pickle.dump(past,w)
     if enhace: saver(results,f'_enhace_{perspective}')
     else: saver(results,'')    
     return
