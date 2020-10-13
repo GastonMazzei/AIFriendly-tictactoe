@@ -44,7 +44,7 @@ def processer(dat, perspective: str='o'):
 
 def init(opt=False):
   if opt:
-    with open('./../data/results_enhace.pkl','rb') as w: 
+    with open(f'./../data/results_enhace_{opt}.pkl','rb') as w: 
       data = pickle.load(w)
     return data
   with open('./../data/results.pkl','rb') as w: 

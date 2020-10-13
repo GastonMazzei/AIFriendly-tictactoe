@@ -75,7 +75,7 @@ if __name__=='__main__':
         if enhace:
           for _ in perspective:
             generator(N , grid, verbose, enhace, _)
-            df = processer(init(True), _)
+            df = processer(init(_), _)
             df.to_csv(f'./../data/processed-{_}_enhace.csv',index=False)
  
           # Fit a network!

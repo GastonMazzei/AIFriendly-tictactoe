@@ -65,19 +65,20 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
         scaler_X = StandardScaler().fit(pd.read_csv(f'../data/processed-x.csv').to_numpy()[:,:-1])
         model_X = load_model(f'./../data/models/model-x')
         X_mover = (lambda x,y: AIFriendly_X(x, model_X, scaler_X,y) )
-        O_mover = (lambda x,y: smart_O(x, random_O))  
+        O_mover = (lambda x,y: (smart_O(x, random_O),[y]))  
       else:
         scaler_O = StandardScaler().fit(pd.read_csv(f'../data/processed-o.csv').to_numpy()[:,:-1])
         model_O = load_model(f'./../data/models/model-o')
         O_mover = (lambda x,y: AIFriendly_O(x, model_O, scaler_O,y) )
-        X_mover = (lambda x,y: smart_X(x, random_X))  
+        X_mover = (lambda x,y: (smart_X(x, random_X),[y]))  
     else: 
-      X_mover = (lambda x,y: smart_X(x, random_X))  
-      O_mover = (lambda x,y: smart_O(x, random_O))  
+      X_mover = (lambda x,y: (smart_X(x, random_X),[y]))  
+      O_mover = (lambda x,y: (smart_O(x, random_O),[y]))  
 
     past = [{}]
     for x in range(Ngames): 
-        if True:
+        print('lap ',x)
+        try:
             # (0) Report
             #
             if x%20==0: 
@@ -99,10 +100,11 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
             #
             while i==0: 
                 temp = []
-                if True:
+                try:
                     # (2.0)   "X moves"
                     #t = smart_X(t, random_X)
-                    t,*past = X_mover(t,past[0])
+                    t,past = X_mover(t,past[0])
+                    #c = X_mover(t,past[0])
                     temp.append(tuple(t.board.ravel().tolist()[0])) 
                     # (2.1)   "if X won, break"
                     if t.checkX(): 
@@ -112,7 +114,7 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
 
                     # (2.2)   "O moves"
                     #t = smart_O(t, random_O) 
-                    t,*past = O_mover(t,past[0])
+                    t,past = O_mover(t,past[0])
                     temp.append(tuple(t.board.ravel().tolist()[0]))
                     log += temp
 
@@ -121,9 +123,10 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
                         i = 3    
                         break
 
-                #except:
+                except:
                     #    "if an exception occurred, it was raised by a tie"
                     log += temp
+                    
                     i = 2
                     break
 
@@ -133,6 +136,8 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
             #            "lists" are not-
             #
             log = tuple(log)
+            print('HERE')
+            print(past,log,sep='\n')
 
             # (4) Append results
             # INDEX: 
@@ -145,6 +150,7 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
             else:
               results[log] = [0,0,0]
               results[log][i-1] += 1
+            print('HERE')
 
     #**********************************FLAGGED FOR KILL  
             if False:        
@@ -159,8 +165,8 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
                       stages[y][temp_pand][i-1] += 1
     #**********************************FLAGGED FOR KILL
 
-        #except Exception as ins:
-        #    print(f'Game {x}/{Ngames} failed with code: ', ins.args)
+        except Exception as ins:
+            print(f'Game {x}/{Ngames} failed with code: ', ins.args)
 
     #**********************************FLAGGED FOR KILL   
     if False:
@@ -173,7 +179,7 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
     #**********************************FLAGGED FOR KILL   
 
     # (5) Save
-    if enhace: saver(results,'_enhace')
+    if enhace: saver(results,f'_enhace_{perspective}')
     else: saver(results,'')    
     return
 
