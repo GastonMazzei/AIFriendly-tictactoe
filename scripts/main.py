@@ -26,11 +26,11 @@ from SmartGame.processing.network import load, preprocess, create_and_predict
 from SmartGame.interactive.play import play
 from SmartGame.interactive.play_x import play_x
 
-def generator(ngames: list, grid: tuple, verbose: bool=False, enhace=False, perspective=''):
+def generator(ngames: list, grid: tuple, verbose: bool=False, enhace=False, perspective='',**kwargs):
     try:
         L, pL = grid
         if perspective:
-          core(ngames,L,pL,verbose, enhace, perspective)
+          core(ngames,L,pL,verbose, enhace, perspective,**kwargs)
         else:
           core(ngames,L,pL,verbose, enhace)
     except Exception as ins:
@@ -73,15 +73,18 @@ if __name__=='__main__':
 
         # Process game-results!
         if enhace:
+          noise = 0.1
           if False: 
             #network vs random...
             for _ in perspective:
-              generator(N , grid, verbose, enhace, _)
+              generator(N , grid, verbose, enhace, _,
+                        random_O=noise, random_X=noise,)
               df = processer(init(_), _)
               df.to_csv(f'./../data/processed-{_}_enhace.csv',index=False)
           else:  
             #networks vs each other
-            generator(N , grid, verbose, enhace, 'both')
+            generator(N , grid, verbose, enhace, 'both',
+                        random_O=noise, random_X=noise,)
             for _ in perspective:
               df = processer(init('both'), _)
               df.to_csv(f'./../data/processed-{_}_enhace.csv',index=False)
