@@ -26,10 +26,13 @@ from SmartGame.processing.network import load, preprocess, create_and_predict
 from SmartGame.interactive.play import play
 from SmartGame.interactive.play_x import play_x
 
-def generator(ngames: list, grid: tuple, verbose: bool=False, enhace=False):
+def generator(ngames: list, grid: tuple, verbose: bool=False, enhace=False, perspective=''):
     try:
         L, pL = grid
-        core(ngames,L,pL,verbose, enhace)
+        if perspective:
+          core(ngames,L,pL,verbose, enhace, perspective)
+        else:
+          core(ngames,L,pL,verbose, enhace)
     except Exception as ins:
         mssg = f'\n STATUS: an error ocurred'
         print(mssg, ins.args)
@@ -65,23 +68,24 @@ if __name__=='__main__':
         # Generate games!
         grid = (3,3)
         verbose = False
-        N = 1500
+        N = 5
         perspective = ['o','x']
-        generator(N , grid, verbose, enhace)
 
         # Process game-results!
         if enhace:
           for _ in perspective:
-              df = processer(init(True), _)
-              df.to_csv(f'./../data/processed-{_}_enhace.csv',index=False)
+            generator(N , grid, verbose, enhace, _)
+            df = processer(init(True), _)
+            df.to_csv(f'./../data/processed-{_}_enhace.csv',index=False)
  
           # Fit a network!
           #
           # EXTRA: do we want to see each training-result?
           plot = True #<-- True or False 
           for _ in perspective:    
-              create_and_predict(preprocess(load(f'./../data/processed-{_}_enhace.csv'),),
-                  neurons=16, epochs=120, plot=plot, model=_, saving_name='_enhace')
+            create_and_predict(preprocess(load(f'./../data/processed-{_}_enhace.csv'),),
+                                          neurons=16, epochs=120, plot=plot,
+                                          model=_, saving_name='_enhace')
           # Play!
           AGAINST = 'O'
           if AGAINST=='O':
@@ -89,6 +93,7 @@ if __name__=='__main__':
           else:
             play_x(*grid, True)
         else:
+          generator(N , grid, verbose, enhace)
           for _ in perspective:
               df = processer(init(), _)
               df.to_csv(f'./../data/processed-{_}.csv',index=False)

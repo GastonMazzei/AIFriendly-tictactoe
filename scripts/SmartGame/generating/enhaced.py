@@ -23,6 +23,7 @@ from SmartGame.interactive.brains import hacer_y_copiar_desacoplado,processInDat
 def AIFriendly_O(TickTackToe,model,scaler, past):
     a = TickTackToe.board.ravel().tolist()[0]
     L = TickTackToe.length
+    print(tuple(a))
     if tuple(a) in past.keys() and tuple(a)!=tuple([-1]*(L**2)):
       return past[tuple(a)], past
     pL = TickTackToe.patternLength
@@ -53,6 +54,7 @@ def AIFriendly_O(TickTackToe,model,scaler, past):
 def AIFriendly_X(TickTackToe,model,scaler, past):
     a = TickTackToe.board.ravel().tolist()[0] 
     L = TickTackToe.length
+    print(a)
     if tuple(a) in past.keys() and tuple(a)!=tuple([-1]*(L**2)):
       return past[tuple(a)], past
     pL = TickTackToe.patternLength

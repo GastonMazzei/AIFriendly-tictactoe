@@ -26,7 +26,7 @@ from SmartGame.generating.smart import smart_O, smart_X
 from SmartGame.generating.enhaced import AIFriendly_O, AIFriendly_X
 
 
-def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, **kwargs): 
+def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, perspective='', **kwargs): 
     """
     kwargs:
 
@@ -61,26 +61,30 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, **k
     #***************************************************************
 
     if enhace:
-      scaler_X = StandardScaler().fit(pd.read_csv(f'../data/processed-x.csv').to_numpy()[:,:-1])
-      scaler_O = StandardScaler().fit(pd.read_csv(f'../data/processed-o.csv').to_numpy()[:,:-1])
-      model_O = load_model(f'./../data/models/model-o')
-      model_X = load_model(f'./../data/models/model-x')
-      X_mover = (lambda x,y: AIFriendly_X(x, model_X, scaler_X,y) )
-      O_mover = (lambda x,y: AIFriendly_O(x, model_O, scaler_O,y) )
+      if perspective=='x':
+        scaler_X = StandardScaler().fit(pd.read_csv(f'../data/processed-x.csv').to_numpy()[:,:-1])
+        model_X = load_model(f'./../data/models/model-x')
+        X_mover = (lambda x,y: AIFriendly_X(x, model_X, scaler_X,y) )
+        O_mover = (lambda x,y: smart_O(x, random_O))  
+      else:
+        scaler_O = StandardScaler().fit(pd.read_csv(f'../data/processed-o.csv').to_numpy()[:,:-1])
+        model_O = load_model(f'./../data/models/model-o')
+        O_mover = (lambda x,y: AIFriendly_O(x, model_O, scaler_O,y) )
+        X_mover = (lambda x,y: smart_X(x, random_X))  
     else: 
       X_mover = (lambda x,y: smart_X(x, random_X))  
       O_mover = (lambda x,y: smart_O(x, random_O))  
 
     past = [{}]
     for x in range(Ngames): 
-        try:
+        if True:
             # (0) Report
             #
-            if x%200==0: 
+            if x%20==0: 
               print(f'Lap N{x}')
               if enhace: 
                 print(f'past dictionary has {len(past[0].keys())} keys')
-                threshold = 2
+                threshold = 20
                 if len(past[0].keys())<threshold: 
                   #for k,v in past[0].values(): print(k,v,sep=' ',end='\t')
                   print(past)
@@ -95,12 +99,11 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, **k
             #
             while i==0: 
                 temp = []
-                try:
+                if True:
                     # (2.0)   "X moves"
                     #t = smart_X(t, random_X)
                     t,*past = X_mover(t,past[0])
                     temp.append(tuple(t.board.ravel().tolist()[0])) 
-
                     # (2.1)   "if X won, break"
                     if t.checkX(): 
                         i = 1
@@ -118,7 +121,7 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, **k
                         i = 3    
                         break
 
-                except:
+                #except:
                     #    "if an exception occurred, it was raised by a tie"
                     log += temp
                     i = 2
@@ -156,8 +159,8 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, **k
                       stages[y][temp_pand][i-1] += 1
     #**********************************FLAGGED FOR KILL
 
-        except Exception as ins:
-            print(f'Game {x}/{Ngames} failed with code: ', ins.args)
+        #except Exception as ins:
+        #    print(f'Game {x}/{Ngames} failed with code: ', ins.args)
 
     #**********************************FLAGGED FOR KILL   
     if False:
