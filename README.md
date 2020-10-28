@@ -9,17 +9,21 @@
 <h2> In a Nutshell </h2>
 <img src="./data/images/info.png">
 To build the models yourself please run
+
 ```bash
 bash build.sh
 ```
+
 To play against AI-Friendly run
 ```bash
 bash play-first.sh
 ```
 If you want to be the "X", or 
+
 ```bash
 bash play-second.sh
 ```
+
 If you want to be the "O"
 <br>
 Finally: if you want to make it more intelligent then run
@@ -46,6 +50,7 @@ bash enhace.sh
 
 <h2>5) Training with the randomly-generated database leads to an insatisfactory amount of intelligence. What can I do?</h2>
 <i>You can re-train it against itself and thus make it smarter by running</i>
+
 ```bash
 bash enhace.sh
 ```
