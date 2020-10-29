@@ -17,7 +17,7 @@ from keras.layers import Dense
 
 from keras import backend
 import os
-
+from SmartGame.processing.symmetry_rotation import rotate_to_bottom_left_center_of_mass as rblcm
 from SmartGame.generating.classdef import TickTackToe
 
 
@@ -132,16 +132,22 @@ def processInData(model, s, inData):
 
 #--------------------------------------------------------------------------
 def new_respond(TickTackToe,model,scaler,name,**kwargs):
-    a = TickTackToe.board.ravel().tolist()[0]
     L = TickTackToe.length
     pL = TickTackToe.patternLength
+    # This is the symmetry rotation________________.
+    if True:                                      #|
+      orig,_,antirrotation = rblcm(TickTackToe.board)#|
+      a = orig.ravel().tolist()[0]                   #|
+    else:                                         #|
+      #-----o-l-d--v-e-r-s-i-o-n-------------------|
+      a = TickTackToe.board.ravel().tolist()[0]
     cases = []
     probas = []
-    #j = 0
     for K1 in range(L):
         for K2 in range(L):
-            if TickTackToe.board.item(K1,K2)==-1:
+            if orig.item(K1,K2)==-1:
                 copia = hacer_y_copiar_desacoplado(TickTackToe,L,pL)
+                copia.board = rblcm(copia.board)[0]
                 if kwargs.get('prespective','o')=='o':
                   copia.board.itemset((K1,K2),0)
                 else:
@@ -153,21 +159,24 @@ def new_respond(TickTackToe,model,scaler,name,**kwargs):
                 result = processInData(model, scaler, INPUT)
                 result = result[0][0]
                 print(f'result for {K1} and {K2} is ',result)
-                #if result==1: cases.append(b)
                 cases.append(b)
                 probas.append(result)
             else: pass
-    if not cases: #  PLEASE KILL THIS PART!
-        copia = hacer_y_copiar_desacoplado(TickTackToe,L,pL)
-        copia.movesX()
-        if copia.checkX(): return copia,f"------{name} TE HA GANADO!-(anque fue aleatorio esto ultimo)---", False
-        else: return copia,f"-------{name} no recomienda nada... usando output aleatorio...----",True
-    print(f'probas are {probas}')
+    print(f'probas are {probas} with antirrotation {antirrotation}')
     move = cases[np.argmax(probas)]
     copia = hacer_y_copiar_desacoplado(TickTackToe,L,pL)
-    copia.board = np.matrix([x for x in np.asarray(move).reshape((L,L)) ])
-    if copia.checkO(): return copia,f"------{name} TE HA GANADO!-------", False 
-    else: return copia, f'{name} ha elegido...MIRA:', True       
+    copia.board = rblcm(copia.board)[0]
+    temporal = np.matrix([x for x in np.asarray(move).reshape((L,L)) ])
+    print(temporal)
+    for j in range(antirrotation):
+      temporal = np.rot90(temporal)
+    copia.board = temporal
+    if kwargs.get('prespective','o')=='o':
+      if copia.checkO(): return copia,f"------{name} TE HA GANADO!-------", False 
+      else: return copia, f'{name} ha elegido...MIRA:', True       
+    elif kwargs.get('prespective','o')=='x':
+      if copia.checkX(): return copia,f"------{name} TE HA GANADO!-------", False 
+      else: return copia, f'{name} ha elegido...MIRA:', True       
 
 #------------------------------------------------------------------NO MORE TickTackToe FUNCTION
 

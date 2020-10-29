@@ -73,12 +73,13 @@ def play(L=3,pL=3, enhace=False):
       try:
           if timer:
             time.sleep(1)
-
+          print('hi!')
           #T,message,init =respond(T,model,scaler,name,allowedMoves,L,pL)
           T, message, init = new_respond(T,model,scaler,name)
           if timer: 
             time.sleep(1)
-      except:
+      except Exception as ins:
+          print(ins.args)
           print('--IT WAS A TIE--')
           tablero_printer(T.board)    
           break

@@ -13,12 +13,15 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.losses import binary_crossentropy
 from keras.optimizers import SGD
+from keras.callbacks import EarlyStopping
 
 from sklearn.metrics import roc_curve
 from sklearn.preprocessing import StandardScaler
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+from SmartGame.processing.symmetry_rotation import rotate_to_bottom_left_center_of_mass as rblcm
 
 def load(name):
     return pd.read_csv(name,low_memory=False).dropna().sample(frac=1)
@@ -28,7 +31,28 @@ def preprocess(df):
     data = {}
     print(df.head())
     x, y = df.to_numpy()[:,:-1].reshape(-1,len(df.columns)-1), df.to_numpy()[:,-1].reshape(-1,1)
-    print(f'SHAPE OF X IS ',x.shape)
+
+    #---------------------------------------------------------------------------------------
+    # here we apply the rotation symmetry
+    length = x.shape[1]//2
+    side = int(np.sqrt(length))
+    opt = [1,2][0]
+    # this "opt" mechanism allows
+    # alternative applications
+    if opt==1:
+      z1 = np.apply_along_axis(lambda x: np.asarray(
+                                               rblcm( 
+                                             np.matrix(x.reshape(side,side))
+                                                      )[0]
+                                                       ).reshape(length,), 1, x[:,:length])
+      z2 = np.apply_along_axis(lambda x: np.asarray(
+                                               rblcm( 
+                                             np.matrix(x.reshape(side,side))
+                                                      )[0]
+                                                       ).reshape(length,), 1, x[:,length:])
+      x = np.concatenate([z1,z2],1)      
+    #---------------------------------------------------------------------------------------
+
     if True:
       for s in [StandardScaler]:
         x=s().fit_transform(x)
@@ -40,11 +64,7 @@ def preprocess(df):
         data[k] = (x[i],y[i])
         print(f'for key {k} {np.count_nonzero(data[k][1])/len(data[k][1])*100}% are non-zero')
         print(f'{data[k][0].shape}')
-    if False:
-        answ = input('if you are happy with the ratio, press "y"... else "n"')
-        if answ=='y': return data
-        else: sys.exit(1)
-    else: return data
+    return data
         
 def manage_database(name):
   with open(name,'rb') as f:
@@ -72,6 +92,9 @@ def create_and_predict(data,**kwargs):
                 kwargs.get('neurons',20),
                 activation=act,),
             Dense(
+                kwargs.get('neurons',20),
+                activation=act,),
+            Dense(
                 1,
                 activation='sigmoid'),
                     ]
@@ -82,11 +105,12 @@ def create_and_predict(data,**kwargs):
                 metrics='accuracy',)
     #
     # 2) Fit
+    callback = EarlyStopping(monitor='loss', patience=5)
     results = model.fit(
             *data['train'],
             batch_size=kwargs.get('batch_size',32),
             epochs=kwargs.get('epochs',50),
-            verbose=0,
+            verbose=0,callbacks=[callback],
             validation_data=data['val'],)
     try: os.mkdir('./../data/models')
     except: pass 
@@ -112,8 +136,13 @@ def create_and_predict(data,**kwargs):
           fpr, tpr, treshold = roc_curve(
                 results['ytrue_'+case], results['ypred_'+case]
                     )
-          ax[0].plot(fpr, tpr)
-        
+          ax[0].plot(tuple(fpr), tuple(tpr),label='AI-Friendly')
+          fpr, tpr, treshold = roc_curve(
+                results['ytrue_'+case], np.random.permutation(results['ytrue_'+case])
+                    )
+          ax[0].plot(tuple(fpr), tuple(tpr),label='random')
+          ax[0].legend()
+
           weights = {0:[],1:[]}
           for i,x in enumerate(results['ypred_'+case]):
             weights[data[case][1][i][0]] += [x[0]]

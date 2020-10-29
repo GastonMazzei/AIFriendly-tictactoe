@@ -40,6 +40,9 @@ def generator(ngames: list, grid: tuple, verbose: bool=False, enhace=False, pers
 
 
 if __name__=='__main__':
+    plot = [False,True][1] #<-- True or False 
+    grid = (3,3) #<-- (L,pL) e.g. (3,3) 
+
     try:
         played=False
         if sys.argv[1]=='play': 
@@ -52,11 +55,11 @@ if __name__=='__main__':
                 play(*[int(j_) for j_ in sys.argv[3:]])
             except:
                 if version=='first':
-                  if enhace: play(3,3,'enhace')
-                  else: play(3,3)
+                  if enhace: play(*grid,'enhace')
+                  else: play(*grid)
                 else: 
-                  if enhace: play_x(3,3,'enhace')
-                  else: play_x(3,3)
+                  if enhace: play_x(*grid,'enhace')
+                  else: play_x(*grid)
     except: 
         pass 
 
@@ -68,14 +71,13 @@ if __name__=='__main__':
         except: enhace=False
 
         # Generate games!
-        grid = (3,3)
         verbose = False
         N = 8000
         perspective = ['o','x']
 
         # Process game-results!
         if enhace:
-          noise = 0.1
+          noise = 0.5
           if False: 
             #network vs random...
             for _ in perspective:
@@ -92,11 +94,9 @@ if __name__=='__main__':
               df.to_csv(f'./../data/processed-{_}_enhace.csv',index=False)
           # Fit a network!
           #
-          # EXTRA: do we want to see each training-result?
-          plot = True #<-- True or False 
           for _ in perspective:    
             create_and_predict(preprocess(load(f'./../data/processed-{_}_enhace.csv'),),
-                                          neurons=32, epochs=120, plot=plot,
+                                          neurons=32, epochs=150, plot=plot, #batch_size=128,
                                           model=_, saving_name='_enhace')
           # Play!
           AGAINST = 'O'
@@ -111,14 +111,12 @@ if __name__=='__main__':
               df.to_csv(f'./../data/processed-{_}.csv',index=False)
  
           # Fit a network!
-          #
-          # EXTRA: do we want to see each training-result?
-          plot = True #<-- True or False 
           for _ in perspective:    
               create_and_predict(preprocess(load(f'./../data/processed-{_}.csv'),),
-                  neurons=16, epochs=120, plot=plot, model=_)
+                  neurons=32, epochs=150, plot=plot, model=_)
           # Play!
           AGAINST = 'O'
+          #.
           if AGAINST=='O':
             play(*grid)
           else:

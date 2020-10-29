@@ -7,7 +7,7 @@
 ---
 
 <h2> In a Nutshell </h2>
-<img src="./data/images/info.png">
+<img src="./infograph.png">
 To build the models yourself please run
 
 ```bash
@@ -31,6 +31,13 @@ Finally: if you want to make it more intelligent then run
 bash enhace.sh
 ```
 (as much times as you want, suggested: start with one)
+
+If you want to play against the 'enhaced AI' then you must add the flag 'enhace' to the playing scripts
+e.g.
+
+```bash
+bash play-second.sh enhace
+```
 
 ---
 

@@ -47,22 +47,41 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
     
 
     if enhace:
+      # comment this and they will play against random-|
+      perspective = 'both'                            #|
+      #------------------------------------------------|
       if perspective=='x':
         scaler_X = StandardScaler().fit(pd.read_csv(f'../data/processed-x.csv').to_numpy()[:,:-1])
-        model_X = load_model(f'./../data/models/model-x')
+        try:
+          model_X = load_model(f'./../data/models/model-x_enhace')
+          print('using previous enhaced models for enhacement! (recursive training)')
+        except:
+          model_X = load_model(f'./../data/models/model-x')
         X_mover = (lambda x,y: AIFriendly_X(x, model_X, scaler_X,y) )
         O_mover = (lambda x,y: (smart_O(x, random_O),[y]))  
       elif perspective=='o':
         scaler_O = StandardScaler().fit(pd.read_csv(f'../data/processed-o.csv').to_numpy()[:,:-1])
-        model_O = load_model(f'./../data/models/model-o')
+        try:
+          model_O = load_model(f'./../data/models/model-o_enhace')
+          print('using previous enhaced models for enhacement! (recursive training)')
+        except:
+          model_O = load_model(f'./../data/models/model-o')
         O_mover = (lambda x,y: AIFriendly_O(x, model_O, scaler_O,y) )
         X_mover = (lambda x,y: (smart_X(x, random_X),[y]))  
       else:
         scaler_X = StandardScaler().fit(pd.read_csv(f'../data/processed-x.csv').to_numpy()[:,:-1])
         scaler_O = StandardScaler().fit(pd.read_csv(f'../data/processed-o.csv').to_numpy()[:,:-1])
-        model_X = load_model(f'./../data/models/model-x')
+        try:
+          model_X = load_model(f'./../data/models/model-x_enhace')
+          print('using previous enhaced models for enhacement! (recursive training)')
+        except:
+          model_X = load_model(f'./../data/models/model-x')
         X_mover = (lambda x,y: AIFriendly_X(x, model_X, scaler_X,y) )
-        model_O = load_model(f'./../data/models/model-o')
+        try:
+          model_O = load_model(f'./../data/models/model-o_enhace')
+          print('using previous enhaced models for enhacement! (recursive training)')
+        except:
+          model_O = load_model(f'./../data/models/model-o')
         O_mover = (lambda x,y: AIFriendly_O(x, model_O, scaler_O,y) )
     else: 
       X_mover = (lambda x,y: (smart_X(x, random_X),[y]))  
@@ -75,7 +94,8 @@ def core(Ngames : int, L : int, pL : int, verbose: bool=False, enhace=False, per
             #
             if x%1000==0: 
               print(f'Lap N{x}')
-              if enhace: 
+              if False:
+                # for "enhace"-debugging 
                 print(f'past dictionary has {len(past[0].keys())} keys')
                 threshold = 20
                 if len(past[0].keys())<threshold: 

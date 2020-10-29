@@ -70,11 +70,14 @@ def play_x(L=3,pL=3, enhace=False):
       try:
           if timer:
             time.sleep(1)
-          #T,message,init =respond(T,model,scaler,name,allowedMoves,L,pL)
           T, message, init = new_respond(T,model,scaler,name, perspective='x')
           if timer: 
             time.sleep(1)
-          if -1 not in T.board.ravel().tolist()[0]: raise Exception('it is a tie!')
+          if not init:
+            print(message)
+            tablero_printer(T.board)          
+          if -1 not in T.board.ravel().tolist()[0]:
+            raise Exception('it is a tie!')
       except:
           print('--IT WAS A TIE--')
           tablero_printer(T.board)    
