@@ -8,13 +8,30 @@
 
 <h2> In a Nutshell </h2>
 <img src="./infograph.png">
-To build the models yourself please run
+
+---
+
+<h1><p align="center"><b>STEP 1: BUILD</b></p></h1>
 
 ```bash
 bash build.sh
 ```
 
-To play against AI-Friendly run
+To build the models yourself please run
+<sub>
+* Building takes 5 minutes
+* 2 information graphs are shown and script resumes after manually closing them
+* Uses python3 and specifically Keras (<a href="https://pypi.org/project/Keras/">pip install keras</a>)
+* Ends with a direct match between you and AIFriendly
+</sub>
+
+---
+
+<h1><p align="center"><b>STEP 2: PLAY</b></p></h1>
+
+
+To play against AI-Friendly after building run
+
 ```bash
 bash play-first.sh
 ```
@@ -30,7 +47,7 @@ Finally: if you want to make it more intelligent then run
 ```bash
 bash enhace.sh
 ```
-(as much times as you want, suggested: start with one)
+<sub>(it can be enhaced as many times as you want, suggested: start with one)</sub>
 
 If you want to play against the 'enhaced AI' then you must add the flag 'enhace' to the playing scripts
 e.g.
